@@ -163,4 +163,21 @@ class ADL_img_gh(ADL_gh):
   
   def check_in_all_ghs(self, point):
     '''check all gh's in the system to find a match with the point '''
-    for crop in os.listdir()
+    flag = 0
+    root_dir = "/content/drive/MyDrive/AgroDL/AgroDL_Data/Input/Image_countings"
+    for crop in os.listdir(root_dir):
+      for grower in os.listdir(f"{root_dir}/{crop}"):
+        for gh in os.listdir(f"{root_dir}/{crop}/{grower}"):
+          for file1 in os.listdir(f"{root_dir}/{crop}/{grower}/{gh}/gh_details"):
+            if file1.endswith("pkl"):
+              file2 = open(f'{root_dir}/{crop}/{grower}/{gh}/gh_details/{file1}', 'rb')
+              gh_object = pickle.load(file2)
+              if gh_object.check_if_in_gh(point):
+                flag = 1
+                return gh
+              else:
+                continue
+    if flag == 0:
+      print("no matching with any gh is the system") 
+      return False
+
