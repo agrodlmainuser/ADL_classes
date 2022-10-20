@@ -3,6 +3,8 @@ import xml.etree.ElementTree as ET
 import PIL
 import geopy.distance
 import numpy as np
+import os
+import pickle
 
 
 class ADL_Read_XML:
@@ -138,3 +140,22 @@ class ADL_gh:
           line_index += 1
           prev_cor = line_cor 
     self.gh_lines = mapping_dict
+
+
+class ADL_img_gh(ADL_gh):
+  
+  def check_in_grower_dir(self, grower_dir, point):
+    flag = 0
+    for gh in os.listdir(self.grower_dir):
+      for file1 in os.listdir(f"{self.grower_dir}/{gh}/gh_details"):
+        if file1.endswith("pkl"):
+          file2 = open(f'{self.grower_dir}/{gh}/gh_details/{file1}', 'rb')
+          gh_object = pickle.load(file2)
+          if gh_object.check_if_in_gh(point):
+            flag = 1
+            return gh
+          else:
+            continue
+    if flag == 0:
+      print("no matching with grower's gh's") 
+      return False
