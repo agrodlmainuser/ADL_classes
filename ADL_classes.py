@@ -145,11 +145,12 @@ class ADL_gh:
 class ADL_img_gh(ADL_gh):
   
   def check_in_grower_dir(self, grower_dir, point):
+    ''' check if the photo comes from one of the grower's gh's'''
     flag = 0
-    for gh in os.listdir(self.grower_dir):
-      for file1 in os.listdir(f"{self.grower_dir}/{gh}/gh_details"):
+    for gh in os.listdir(grower_dir):
+      for file1 in os.listdir(f"{grower_dir}/{gh}/gh_details"):
         if file1.endswith("pkl"):
-          file2 = open(f'{self.grower_dir}/{gh}/gh_details/{file1}', 'rb')
+          file2 = open(f'{grower_dir}/{gh}/gh_details/{file1}', 'rb')
           gh_object = pickle.load(file2)
           if gh_object.check_if_in_gh(point):
             flag = 1
@@ -159,3 +160,7 @@ class ADL_img_gh(ADL_gh):
     if flag == 0:
       print("no matching with grower's gh's") 
       return False
+  
+  def check_in_all_ghs(self, point):
+    '''check all gh's in the system to find a match with the point '''
+    for crop in os.listdir()
