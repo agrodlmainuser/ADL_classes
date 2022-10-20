@@ -20,4 +20,11 @@ The script contains general classes to be used across different scripts.
                        created.
             - check_if_in_gh(self, point): check if a point coordinate is in the gh.
             - line_mapping(self, lines_cor): sort and save a dictionary variable into the object which contain every line and its coordinate
+            
+#4 class: ADL_img_gh - check in which gh the image is coming from, wether current grower or other grower
+
+    Methods:
+
+    
+
     
