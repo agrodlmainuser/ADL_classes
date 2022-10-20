@@ -178,6 +178,6 @@ class ADL_img_gh(ADL_gh):
               else:
                 continue
     if flag == 0:
-      print("no matching with any gh is the system") 
+      print("no matching with any gh is the system.") 
       return False
 
