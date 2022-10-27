@@ -46,6 +46,7 @@ class ADL_EXIF:
     self.path_to_file = path_to_file
 
   def read_exif(self):
+    from PIL import Image
     image = PIL.Image.open(self.path_to_file)
     EXIF_data = image._getexif()
     gps_lat = float(EXIF_data[34853][2][0][0])
