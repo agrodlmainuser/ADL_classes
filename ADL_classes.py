@@ -143,10 +143,22 @@ class ADL_gh:
     self.gh_lines = mapping_dict
 
 
-class ADL_img_gh(ADL_gh):
+class ADL_img_gh(ADL_EXIF):
+
+  def check_in_current_gh(self, gh_dir, img_path):
+    point = self.read_exif()
+    for file1 in os.listdir(f"{gh_dir}/gh_details"):
+        if file1.endswith("pkl"):
+          file2 = open(f'{gh_dir}/gh_details/{file1}', 'rb')
+          gh_object = pickle.load(file2)
+          if gh_object.check_if_in_gh(point):
+            return True 
+          else:
+            return False 
   
-  def check_in_grower_dir(self, grower_dir, point):
+  def check_in_grower_dir(self, grower_dir, img_path):
     ''' check if the photo comes from one of the grower's gh's'''
+    point = self.read_exif()
     flag = 0
     for gh in os.listdir(grower_dir):
       for file1 in os.listdir(f"{grower_dir}/{gh}/gh_details"):
