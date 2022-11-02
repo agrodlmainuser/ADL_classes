@@ -47,11 +47,13 @@ class ADL_EXIF:
 
   def read_exif(self):
     from PIL import Image
-    image = PIL.Image.open(self.path_to_file)
+    image = Image.open(self.path_to_file)
     EXIF_data = image._getexif()
-    gps_lat = float(EXIF_data[34853][2][0][0])
-    gps_long = float(EXIF_data[34853][4][0][0])
-    return (gps_lat/1000000, gps_long/1000000)
+    gps_lat = EXIF_data[34853][2]
+    gps_lat = gps_lat[0][0]/gps_lat[0][1] + (gps_lat[1][0]/gps_lat[1][1])/60 + (gps_lat[2][0]/gps_lat[2][1])/3600
+    gps_long = EXIF_data[34853][4]
+    gps_long = gps_long[0][0]/gps_long[0][1] + (gps_long[1][0]/gps_long[1][1])/60 + (gps_long[2][0]/gps_long[2][1])/3600
+    return (gps_lat, gps_long)
 
 
 class ADL_gh:
