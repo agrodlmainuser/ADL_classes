@@ -201,11 +201,18 @@ class ADL_GH_analytics:
   def show_all_ghs(self):
     gh_dict = {}
     root_dir = "/content/drive/MyDrive/AgroDL/AgroDL_Data/Input/Image_countings"
+    c = 0
     for crop in os.listdir(root_dir):
       for grower in os.listdir(f"{root_dir}/{crop}"):
         for gh in os.listdir(f"{root_dir}/{crop}/{grower}"):
-          gh_dict[f"{grower}"] = f"{gh}"
-          print(gh_dict)
+          c += 1
+          gh_dict[f"{grower}"] = f"{gh} crop:{crop}" 
+          print(f"grower name: {grower}, GH name: {gh}, crop: {crop}")
+    print(f"\n")
+    print(f"in total there are {c} number of GHs that have been set in the system so far")
+
+gh_obj = ADL_GH_analytics()
+gh_obj.show_all_ghs()
       
       
 
