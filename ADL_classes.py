@@ -196,13 +196,16 @@ class ADL_img_gh(ADL_EXIF):
       print("no matching with any gh is the system.") 
       return False
 
-    def show_all_ghs(self):
-      gh_dict = {}
-      root_dir = "/content/drive/MyDrive/AgroDL/AgroDL_Data/Input/Image_countings"
-      for crop in os.listdir(root_dir):
-        for grower in os.listdir(f"{root_dir}/{crop}):
-          for gh in os.listdir(f"{root_dir}/{crop}/{grower}):
-            gh_dict["f"{grower}""] = f"{gh}"
+class ADL_GH_analytics:
+
+  def show_all_ghs(self):
+    gh_dict = {}
+    root_dir = "/content/drive/MyDrive/AgroDL/AgroDL_Data/Input/Image_countings"
+    for crop in os.listdir(root_dir):
+      for grower in os.listdir(f"{root_dir}/{crop}"):
+        for gh in os.listdir(f"{root_dir}/{crop}/{grower}"):
+          gh_dict[f"{grower}"] = f"{gh}"
+          print(gh_dict)
       
       
 
