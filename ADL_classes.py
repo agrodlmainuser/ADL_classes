@@ -67,7 +67,7 @@ class ADL_EXIF:
 
     from PIL import Image
 
-    if self.path_leaf(self.path_to_file).split('.')[-1] == 'HEIC':
+    if self.path_leaf().split('.')[-1] == 'HEIC':
 
       print("HEIC")
       heif_file = pyheif.read_heif(self.path_to_file)
