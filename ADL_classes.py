@@ -57,10 +57,10 @@ class ADL_EXIF:
     head, tail = ntpath.split(self.path_to_file)
     return tail or ntpath.basename(head)
 
-  def convert_to_degrees(self):
+  def convert_to_degrees(self, values):
     """values is a list that looks like: [41, 53, 569/20] 
        and each thing is a  exifread.utils.Ratio"""
-    degrees, mins, secs = [v.num / v.den for v in self.values]
+    degrees, mins, secs = [v.num / v.den for v in values]
     return degrees + (mins / 60.0) + (secs / 3600.0)
 
   def read_exif(self):
