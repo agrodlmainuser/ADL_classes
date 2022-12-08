@@ -1,4 +1,7 @@
 # ADL_classes
+
+
+
 Main classes
 
 The script contains general classes to be used across different scripts.
@@ -8,8 +11,11 @@ The script contains general classes to be used across different scripts.
     Methods:
             - get_params(): return the XML parmeter depending on the user input
             
-#2 class: ADL_EXIF - extracting GPS data from image into decimal format, return a tuple with the N and E coordinates.
-
+#2 class: ADL_EXIF - extracting GPS data from image(including .HEIC format from Apple) into decimal format, return a tuple with the N and E coordinates.
+                   - Important to install both: pyheif and exifread libraries.
+                     !pip install pyheif
+                     !pip install exifread
+                     
     Methods:
             - read_exif(): extracting the GPS data, return a tuple of the coordinates
             

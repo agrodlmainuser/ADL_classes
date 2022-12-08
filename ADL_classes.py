@@ -1,11 +1,18 @@
 
+# !pip install pyheif
+# !pip install exifread
+
 import xml.etree.ElementTree as ET
 import PIL
 import geopy.distance
 import numpy as np
 import os
 import pickle
-
+from PIL import Image
+import pyheif 
+import exifread
+import io
+import ntpath
 
 class ADL_Read_XML:
 
@@ -45,15 +52,52 @@ class ADL_EXIF:
   def __init__(self, path_to_file):
     self.path_to_file = path_to_file
 
+  def path_leaf(self):
+
+    head, tail = ntpath.split(self.path_to_file)
+    return tail or ntpath.basename(head)
+
+  def convert_to_degrees(self, values):
+    """values is a list that looks like: [41, 53, 569/20] 
+       and each thing is a  exifread.utils.Ratio"""
+    degrees, mins, secs = [v.num / v.den for v in values]
+    return degrees + (mins / 60.0) + (secs / 3600.0)
+
   def read_exif(self):
+
     from PIL import Image
-    image = Image.open(self.path_to_file)
-    EXIF_data = image._getexif()
-    gps_lat = EXIF_data[34853][2]
-    gps_lat = gps_lat[0][0]/gps_lat[0][1] + (gps_lat[1][0]/gps_lat[1][1])/60 + (gps_lat[2][0]/gps_lat[2][1])/3600
-    gps_long = EXIF_data[34853][4]
-    gps_long = gps_long[0][0]/gps_long[0][1] + (gps_long[1][0]/gps_long[1][1])/60 + (gps_long[2][0]/gps_long[2][1])/3600
-    return (gps_lat, gps_long)
+
+    if self.path_leaf().split('.')[-1] == 'HEIC':
+
+      #print("HEIC")
+      heif_file = pyheif.read_heif(self.path_to_file)
+      for metadata in heif_file.metadata:
+
+        file_stream = io.BytesIO(metadata['data'][6:])
+
+        tags = exifread.process_file(file_stream, details=False)
+
+        gps_lat  = tags.get("GPS GPSLatitude")
+        gps_long = tags.get("GPS GPSLongitude")
+        #print(gps_lat,gps_long)
+
+
+        gps_lat =  self.convert_to_degrees(gps_lat.values)
+        gps_long = self.convert_to_degrees(gps_long.values)
+
+      return(gps_lat, gps_long)
+
+    else:
+
+      image = Image.open(self.path_to_file)
+      #print(image.format)
+      EXIF_data = image._getexif()
+      gps_lat = EXIF_data[34853][2]
+      gps_lat = gps_lat[0][0]/gps_lat[0][1] + (gps_lat[1][0]/gps_lat[1][1])/60 + (gps_lat[2][0]/gps_lat[2][1])/3600
+      gps_long = EXIF_data[34853][4]
+      gps_long = gps_long[0][0]/gps_long[0][1] + (gps_long[1][0]/gps_long[1][1])/60 + (gps_long[2][0]/gps_long[2][1])/3600
+      return(gps_lat, gps_long)
+
 
 
 class ADL_gh:
