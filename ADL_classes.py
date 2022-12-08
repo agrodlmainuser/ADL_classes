@@ -69,7 +69,7 @@ class ADL_EXIF:
 
     if self.path_leaf().split('.')[-1] == 'HEIC':
 
-      print("HEIC")
+      #print("HEIC")
       heif_file = pyheif.read_heif(self.path_to_file)
       for metadata in heif_file.metadata:
 
@@ -79,7 +79,7 @@ class ADL_EXIF:
 
         gps_lat  = tags.get("GPS GPSLatitude")
         gps_long = tags.get("GPS GPSLongitude")
-        print(gps_lat,gps_long)
+        #print(gps_lat,gps_long)
 
 
         gps_lat =  self.convert_to_degrees(gps_lat.values)
@@ -90,7 +90,7 @@ class ADL_EXIF:
     else:
 
       image = Image.open(self.path_to_file)
-      print(image.format)
+      #print(image.format)
       EXIF_data = image._getexif()
       gps_lat = EXIF_data[34853][2]
       gps_lat = gps_lat[0][0]/gps_lat[0][1] + (gps_lat[1][0]/gps_lat[1][1])/60 + (gps_lat[2][0]/gps_lat[2][1])/3600
