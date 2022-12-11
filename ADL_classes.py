@@ -1,6 +1,12 @@
 
-# !pip install pyheif
-# !pip install exifread
+import sys
+import subprocess
+
+# installing libraries for HEIC image format reading
+subprocess.check_call([sys.executable, '-m', 'pip', 'install', 
+'pyheif'])
+subprocess.check_call([sys.executable, '-m', 'pip', 'install', 
+'exifread'])
 
 import xml.etree.ElementTree as ET
 import PIL
