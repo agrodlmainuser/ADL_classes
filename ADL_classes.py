@@ -226,7 +226,7 @@ class ADL_img_gh(ADL_EXIF):
             if file1.endswith("pkl"):
               file2 = open(f'{root_dir}/{crop}/{grower}/{gh}/gh_details/{file1}', 'rb')
               gh_object = pickle.load(file2)
-              gh_dir = f'{root_dir}/{crop}/{grower}'
+              gh_dir = f'{root_dir}/{crop}/{grower}/{gh}'
               if gh_object.check_if_in_gh(point):
                 flag = 1
                 return gh_dir
