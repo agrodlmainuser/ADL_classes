@@ -111,8 +111,8 @@ class ADL_gh:
     ''' this method order the coordinates in a counter-clockwise direction for future purposes '''
     # Find the centroid of the coordinates
     n = len(self.gh_corners_coordinates)
-    x = sum(self.gh_corners_coordinates[0] for coordinate in self.gh_corners_coordinates) / n
-    y = sum(self.gh_corners_coordinates[1] for coordinate in self.gh_corners_coordinates) / n
+    x = sum(coordinate[0] for coordinate in self.gh_corners_coordinates) / n
+    y = sum(coordinate[1] for coordinate in self.gh_corners_coordinates) / n
     centroid = (x, y)
     # Sort the coordinates by angle relative to the centroid
     sorted_coordinates = sorted(self.gh_corners_coordinates, key=lambda coordinate: math.atan2(coordinate[1] - y, coordinate[0] - x))
