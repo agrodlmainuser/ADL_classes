@@ -157,8 +157,10 @@ class ADL_gh:
     # sometimes a point might be a bit further of the polygon, we set a factor of 0.5
     if point.within(polygon) or point.distance(polygon) < 0.5:
       print("The point is within the gh")
+      return True
     else:
       print("The point is outside the gh")
+      return False
   
   def line_mapping(self, lines_cor):
     lines_cor.sort(key = lambda x: float(x[1]))
