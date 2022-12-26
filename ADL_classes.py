@@ -7,6 +7,9 @@ subprocess.check_call([sys.executable, '-m', 'pip', 'install',
 'pyheif'])
 subprocess.check_call([sys.executable, '-m', 'pip', 'install', 
 'exifread'])
+# instal library for google photos gh images 
+subprocess.check_call([sys.executable, '-m', 'pip', 'install', 
+'pyproj'])
 
 import xml.etree.ElementTree as ET
 import PIL
@@ -15,10 +18,14 @@ import numpy as np
 import os
 import pickle
 from PIL import Image
-import pyheif 
-import exifread
+import pyheif # need pip install 
+import exifread # need pip install
 import io
 import ntpath
+import math
+import pyproj # need pip install
+from shapely.geometry import Point, Polygon
+
 
 class ADL_Read_XML:
 
@@ -72,29 +79,19 @@ class ADL_EXIF:
   def read_exif(self):
 
     from PIL import Image
-
     if self.path_leaf().split('.')[-1] == 'HEIC':
-
       #print("HEIC")
       heif_file = pyheif.read_heif(self.path_to_file)
       for metadata in heif_file.metadata:
-
         file_stream = io.BytesIO(metadata['data'][6:])
-
         tags = exifread.process_file(file_stream, details=False)
-
         gps_lat  = tags.get("GPS GPSLatitude")
         gps_long = tags.get("GPS GPSLongitude")
         #print(gps_lat,gps_long)
-
-
         gps_lat =  self.convert_to_degrees(gps_lat.values)
         gps_long = self.convert_to_degrees(gps_long.values)
-
       return(gps_lat, gps_long)
-
     else:
-
       image = Image.open(self.path_to_file)
       #print(image.format)
       EXIF_data = image._getexif()
@@ -104,77 +101,64 @@ class ADL_EXIF:
       gps_long = gps_long[0][0]/gps_long[0][1] + (gps_long[1][0]/gps_long[1][1])/60 + (gps_long[2][0]/gps_long[2][1])/3600
       return(gps_lat, gps_long)
 
-
-
+    
 class ADL_gh:
 
   def __init__(self, gh_corners_coordinates):
     self.gh_corners_coordinates = gh_corners_coordinates
 
   def setup(self):
-    # comlete missing corner in case of input of 3
-    if len(self.gh_corners_coordinates) == 3:
-      rr = np.array(self.gh_corners_coordinates)
-      a = geopy.distance.distance(rr[0], rr[1]).km
-      b = geopy.distance.distance(rr[0], rr[2]).km
-      c = geopy.distance.distance(rr[1], rr[2]).km
-
-      if a > b and a > c:
-        self.max_dist = a
-        flag = 2
-        self.corner = rr[2]
-        if b > c:
-          self.near_corner = rr[1]
-          self.far_corner = rr[0]
-        else:
-          self.near_corner = rr[0]
-          self.far_corner = rr[1]
-      elif b > a and b > c:
-        self.max_dist = b
-        flag = 1
-        self.corner = rr[1]
-        if a > c:
-          self.near_corner = rr[2]
-          self.far_corner = rr[0]
-        else:
-          self.near_corner = rr[0]
-          self.far_corner = rr[2]    
-      else:
-        self.max_dist = c
-        flag = 0
-        self.corner = rr[0]
-        if a > b:
-          self.near_corner = rr[2]
-          self.far_corner = rr[1]
-        else:
-          self.near_corner = rr[1]
-          self.far_corner = rr[2]
-      fourth_corner = self.near_corner - self.corner + self.far_corner
-      self.fourth_corner = tuple(fourth_corner)
-      # adding fourth corner to the input coordinates list
-      self.gh_corners_coordinates.append(self.fourth_corner)
-    # in case of input of 4
-    else:
-      corner = self.gh_corners_coordinates[0]
-      near_corner = self.gh_corners_coordinates[0]
-      far_corner = self.gh_corners_coordinates[0]
-      fourth_corner = self.gh_corners_coordinates[0]
-  
-  def check_if_in_gh(self, point):
-    n_points = [self.gh_corners_coordinates[0][0], self.gh_corners_coordinates[1][0], 
-                self.gh_corners_coordinates[2][0], self.gh_corners_coordinates[3][0]]
-    e_points = [self.gh_corners_coordinates[0][1], self.gh_corners_coordinates[1][1],
-                self.gh_corners_coordinates[2][1], self.gh_corners_coordinates[3][1]]
-    for i in range(4):
-      dist = geopy.distance.distance(point, self.gh_corners_coordinates[i]).km
-      # checking the distance from the current corner to the provided point
-      # cheching if the provided point in out of the max/min limits from both north/south and east/west
-      if dist > 0.9 * self.max_dist or point[0] > max(n_points) or point[0] < min(n_points) or point[1] > max(e_points) or point[1] < min(e_points):
-        return False 
+    ''' this method order the coordinates in a counter-clockwise direction for future purposes '''
+    # Find the centroid of the coordinates
+    n = len(self.gh_corners_coordinates)
+    x = sum(self.gh_corners_coordinates[0] for coordinate in self.gh_corners_coordinates) / n
+    y = sum(self.gh_corners_coordinates[1] for coordinate in self.gh_corners_coordinates) / n
+    centroid = (x, y)
+    # Sort the coordinates by angle relative to the centroid
+    sorted_coordinates = sorted(self.gh_corners_coordinates, key=lambda coordinate: math.atan2(coordinate[1] - y, coordinate[0] - x))
+    # Check if the coordinates are in a clockwise or counterclockwise order
+    clockwise = False
+    for i in range(1, n):
+      p1 = sorted_coordinates[i-1]
+      p2 = sorted_coordinates[i]
+      if p2[1] > p1[1] or (p2[1] == p1[1] and p2[0] < p1[0]):
+        clockwise = True
         break
-      else:
-        continue 
-    return True 
+    # Reverse the coordinates if they are in a clockwise order
+    if clockwise:
+      sorted_coordinates = list(reversed(sorted_coordinates))
+    self.gh_corners_coordinates = sorted_coordinates
+  
+  def check_if_in_gh(self, point_to_check):
+    ''' this method check if a point is whithin the bounderiess of a gh or not. Do not perform this method unless doing the setup prior '''
+    # Latitude and longitude coordinates of the GPS point
+    lat, lon = point_to_check
+    lon_deg = int(lon)
+    # UTM zone for the coordinates
+    utm_zone = (lon_deg + 180) // 6 + 1
+    # Create a Pyproj transformer object to convert between WGS84 (latitude/longitude)
+    # and UTM coordinates
+    transformer = pyproj.Transformer.from_crs("EPSG:4326", f"EPSG:326{utm_zone}", always_xy=True)
+    # Convert the latitude and longitude coordinates to UTM coordinates
+    x, y = transformer.transform(lon, lat)
+    # Create a Point object from the UTM coordinates of the GPS point
+    point = Point(x, y)
+    # Coordinates of the vertices of the polygon in UTM coordinates
+    polygon_coords = self.gh_corners_coordinates
+    # polygon coordinates should be in a counter-clockwise order that's why setup method is needed before executing this one
+    # polygon cords should be in UTM system
+    for i, cords in enumerate(polygon_coords):
+      lat, lon = cords
+      x, y = transformer.transform(lon, lat)
+      polygon_coords[i] = (x,y)
+    # Create a Polygon object from the UTM coordinates of the polygon
+    polygon = Polygon(polygon_coords)
+    # Check if the point is within the polygon using the `within` method
+    # sometimes a point might be a bit further of the polygon, we set a factor of 0.5
+    if point.within(polygon) or point.distance(polygon) < 0.5:
+      print("The point is within the gh")
+    else:
+      print("The point is outside the gh")
   
   def line_mapping(self, lines_cor):
     lines_cor.sort(key = lambda x: float(x[1]))
