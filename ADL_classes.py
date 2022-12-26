@@ -158,10 +158,10 @@ class ADL_gh:
     # Check if the point is within the polygon using the `within` method
     # sometimes a point might be a bit further of the polygon, we set a factor of 0.5
     if point.within(polygon) or point.distance(polygon) < 0.5:
-      print("The point is within the gh")
+      #print("The point is within the gh")
       return True
     else:
-      print("The point is outside the gh")
+      #print("The point is outside the gh")
       return False
   
   def line_mapping(self, lines_cor):
